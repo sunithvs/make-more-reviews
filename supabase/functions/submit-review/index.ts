@@ -7,21 +7,36 @@ interface ReviewSubmission {
   rating: number
   reviewText?: string
   metadata: {
-    user_agent?: string
-    referrer_url?: string
-    landing_page?: string
-    device_type?: string
+    url?: string
+    referrer?: string
+    userAgent?: string
+    language?: string
+    screenSize?: string
     browser?: string
-    browser_version?: string
-    os?: string
-    os_version?: string
-    utm_source?: string
-    utm_medium?: string
-    utm_campaign?: string
-    utm_term?: string
-    utm_content?: string
+    timestamp?: string
+    utmParams?: {
+      utm_source?: string
+      utm_medium?: string
+      utm_campaign?: string
+      utm_term?: string
+      utm_content?: string
+    }
   }
 }
+
+interface ErrorResponse {
+  success: false
+  error: string
+  code?: string
+}
+
+interface SuccessResponse {
+  success: true
+  message: string
+  data?: any
+}
+
+type ApiResponse = ErrorResponse | SuccessResponse
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -37,79 +52,108 @@ serve(async (req) => {
 
     // Get request data
     const requestData: ReviewSubmission = await req.json()
-    const clientIp = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')
     
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    )
-
-    // Validate required fields
-    if (!requestData.portalId || !requestData.rating) {
-      throw new Error('Missing required fields: portalId and rating are required')
+    // Validate request data
+    if (!requestData) {
+      throw new Error('Invalid request: Missing request body')
     }
 
-    // Enrich metadata with IP and headers
+    if (!requestData.portalId) {
+      throw new Error('Invalid request: Missing portalId')
+    }
+
+    if (typeof requestData.rating !== 'number' || requestData.rating < 1 || requestData.rating > 5) {
+      throw new Error('Invalid request: Rating must be a number between 1 and 5')
+    }
+
+    // Get client info
+    const clientIp = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for') || 'unknown'
+    const country = req.headers.get('cf-ipcountry')
+    const region = req.headers.get('cf-region')
+    const city = req.headers.get('cf-ipcity')
+    
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Server configuration error: Missing Supabase credentials')
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+
+    // Enrich metadata with IP and location info
     const enrichedMetadata = {
       ...requestData.metadata,
       ip_address: clientIp,
-      country: req.headers.get('cf-ipcountry'),
-      region: req.headers.get('cf-region'),
-      city: req.headers.get('cf-ipcity'),
+      location: {
+        country,
+        region,
+        city,
+      },
+      submission_timestamp: new Date().toISOString(),
     }
 
-    // Call the stored procedure
-    const { data, error } = await supabaseClient.rpc('insert_review_with_metadata', {
+    // Insert review into database
+    const { data, error: dbError } = await supabaseClient.rpc('insert_review_with_metadata', {
       p_portal_id: requestData.portalId,
       p_review_text: requestData.reviewText || '',
       p_rating: requestData.rating,
       p_metadata: enrichedMetadata
     })
 
-    if (error) {
-      throw error
+    if (dbError) {
+      console.error('Database error:', dbError)
+      throw new Error('Failed to save review')
     }
 
     // Return success response
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Review submitted successfully'
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-        status: 200,
-      }
-    )
+    const response: SuccessResponse = {
+      success: true,
+      message: 'Review submitted successfully',
+      data
+    }
+
+    return new Response(JSON.stringify(response), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+      status: 200,
+    })
 
   } catch (error) {
-    // Handle different types of errors
-    const status = error.message.includes('Invalid portal_id') ? 400 :
-                  error.message.includes('Rating must be between') ? 400 :
-                  error.message.includes('Method not allowed') ? 405 : 500
+    console.error('Error processing request:', error)
 
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-        status,
-      }
-    )
+    // Determine appropriate status code
+    let status = 500
+    if (error.message.includes('Method not allowed')) {
+      status = 405
+    } else if (
+      error.message.includes('Invalid request') ||
+      error.message.includes('Rating must be')
+    ) {
+      status = 400
+    }
+
+    // Create error response
+    const errorResponse: ErrorResponse = {
+      success: false,
+      error: error.message,
+      code: status.toString()
+    }
+
+    return new Response(JSON.stringify(errorResponse), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+      status,
+    })
   }
 })

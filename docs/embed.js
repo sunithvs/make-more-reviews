@@ -20,7 +20,8 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
         portalId: config.portalId,
         primaryColor: config.primaryColor || '#007bff',
         delay: config.delay || 5000,
-        endpoint: 'https://wiikcmynyrcdaazhlgfo.supabase.co/functions/v1/submit-review'
+        endpoint: 'https://wiikcmynyrcdaazhlgfo.supabase.co/functions/v1/review-submission',
+        apiKey: config.apiKey
       };
       
       console.log('Created new instance with config:', this.config);
@@ -343,6 +344,7 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.config.apiKey}`
           },
           body: JSON.stringify({
             rating,
@@ -353,8 +355,13 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to submit review');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to submit review');
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to submit review');
         }
 
         return true;
