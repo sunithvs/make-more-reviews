@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Review Widget Documentation</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Review Widget Documentation</h1>
+    
+    <h2>Quick Start</h2>
+    <p>Add the following script to your website:</p>
+    <pre><code>&lt;script&gt;
+(function(w,d,r,i,p,c,t){
+    console.log('Initializing widget script with:', { namespace: r, portalId: i, color: p, delay: c });
+    w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)};
+    t=d.createElement('script');t.async=1;
+    t.src='embed.js';
+    c=d.getElementsByTagName('script')[0];
+    c.parentNode.insertBefore(t,c);
+    w[r]('init', {
+        portalId: i,
+        primaryColor: p,
+        delay: c
+    });
+})(window,document,'ReviewWidgetNS','YOUR_PORTAL_ID','#007bff',1000);
+&lt;/script&gt;</code></pre>
+
+    <h2>Configuration Options</h2>
+    <ul>
+        <li><code>portalId</code> (required): Your unique portal identifier</li>
+        <li><code>primaryColor</code> (optional): The primary color for the widget (default: '#007bff')</li>
+        <li><code>delay</code> (optional): Delay in milliseconds before showing the review modal (default: 5000)</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>&lt;script&gt;
+(function(w,d,r,i,p,c,t){
+    w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)};
+    t=d.createElement('script');t.async=1;
+    t.src='embed.js';
+    c=d.getElementsByTagName('script')[0];
+    c.parentNode.insertBefore(t,c);
+    w[r]('init', {
+        portalId: '123e4567-e89b-12d3-a456-426614174000',
+        primaryColor: '#FF5733',
+        delay: 3000
+    });
+})(window,document,'ReviewWidgetNS','123e4567-e89b-12d3-a456-426614174000','#FF5733',3000);
+&lt;/script&gt;</code></pre>
+
+    <h2>Features</h2>
+    <ul>
+        <li>Customizable appearance with primary color</li>
+        <li>Configurable delay for showing the review modal</li>
+        <li>Star rating system</li>
+        <li>Optional review text</li>
+        <li>Automatic metadata collection (UTM parameters, device info, etc.)</li>
+        <li>Responsive design</li>
+        <li>Cross-browser compatibility</li>
+    </ul>
+
+    <h2>Live Preview</h2>
+    <p>Here's a live preview of the widget with a 2-second delay:</p>
+    <button onclick="window.ReviewWidgetNS.instance && window.ReviewWidgetNS.instance.showModal()">Show Review Modal</button>
+
+    <script>
+    console.log('Starting widget initialization...');
+    (function(w,d,r,i,p,c,t){
+        console.log('Setting up widget with:', { namespace: r, portalId: i, color: p, delay: c });
+        w[r]=w[r]||function(){
+            console.log('Queueing command:', arguments);
+            (w[r].q=w[r].q||[]).push(arguments);
+        };
+        t=d.createElement('script');t.async=1;t.src='embed.js';
+        c=d.getElementsByTagName('script')[0];c.parentNode.insertBefore(t,c);
+        w[r]('init', {
+            portalId: 'test-portal',
+            primaryColor: '#FF5733',
+            delay: 2000
+        });
+    })(window,document,'ReviewWidgetNS','test-portal','#FF5733',2000);
+    </script>
+
+<!--<script type="text/javascript">-->
+<!--    (function(c,l,a,r,i,t,y){-->
+<!--        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};-->
+<!--        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;-->
+<!--        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);-->
+<!--    })(window, document, "clarity", "script", "pcf50fgp6g");-->
+<!--</script>-->
+</body>
+</html>

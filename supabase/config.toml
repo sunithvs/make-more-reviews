@@ -1,0 +1,2 @@
+[functions.submit-review]
+verify_jwt = false
