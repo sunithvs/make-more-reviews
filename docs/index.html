@@ -83,9 +83,7 @@
     <button onclick="if (window.ReviewWidgetNS && window.ReviewWidgetNS.instance) { window.ReviewWidgetNS.instance.showModal(); }">Show Review Modal</button>
 
     <script>
-    console.log('Starting widget initialization...');
-    (function(w,d,r,i,p,c,t){
-        console.log('Setting up widget with:', { namespace: r, portalId: i, color: p, delay: c });
+    (function(w,d,r){
         // Create the namespace if it doesn't exist
         w[r] = w[r] || {};
         // Create the command queue
@@ -97,12 +95,12 @@
             delay: 2000
         }]);
         // Load the script
-        t=d.createElement('script');
-        t.async=1;
-        t.src='embed.js';
-        c=d.getElementsByTagName('script')[0];
+        const t = d.createElement('script');
+        t.async = 1;
+        t.src = 'embed.js';
+        const c = d.getElementsByTagName('script')[0];
         c.parentNode.insertBefore(t,c);
-    })(window,document,'ReviewWidgetNS','1bd4a39f-c1c0-40fb-8f8f-a8ec7f3bbf44','#FF5733',2000);
+    })(window, document, 'ReviewWidgetNS');
     </script>
 
 <!--<script type="text/javascript">-->
