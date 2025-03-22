@@ -7,26 +7,13 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
   // Store the original queue
   const queue = ns.q || [];
   
-  // Clear the queue and replace with actual function
-  ns.q = [];
-  ns = function() {
-    const args = Array.from(arguments);
-    const command = args[0];
-    const config = args[1];
-    
-    if (command === 'init') {
-      console.log('Processing init command with config:', config);
-      ns.init(config);
-    }
-  };
-
   class ReviewWidget {
     constructor(config) {
       console.log('ReviewWidget constructor called with config:', config);
       
-      if (ns.instance) {
+      if (window.ReviewWidgetNS.instance) {
         console.log('Returning existing instance');
-        return ns.instance;
+        return window.ReviewWidgetNS.instance;
       }
       
       this.config = {
@@ -37,7 +24,7 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
       };
       
       console.log('Created new instance with config:', this.config);
-      ns.instance = this;
+      window.ReviewWidgetNS.instance = this;
       this.init();
     }
 
@@ -221,6 +208,12 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
 
     createModal() {
       console.log('Creating modal...');
+      // Remove existing modal if any
+      const existingModal = document.querySelector('.review-widget-overlay');
+      if (existingModal) {
+        existingModal.remove();
+      }
+
       const modal = document.createElement('div');
       modal.className = 'review-widget-overlay';
       modal.innerHTML = `
@@ -261,16 +254,17 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
 
     showModal() {
       console.log('Showing modal...');
-      const modal = document.querySelector('.review-widget-overlay');
-      if (modal) {
-        modal.style.display = 'flex';
-        // Force reflow
-        modal.offsetHeight;
-        modal.classList.add('visible');
-        console.log('Modal displayed and made visible');
-      } else {
-        console.error('Modal element not found!');
+      let modal = document.querySelector('.review-widget-overlay');
+      if (!modal) {
+        console.log('No modal found, creating new one...');
+        this.createModal();
+        modal = document.querySelector('.review-widget-overlay');
       }
+      modal.style.display = 'flex';
+      // Force reflow
+      modal.offsetHeight;
+      modal.classList.add('visible');
+      console.log('Modal displayed and made visible');
     }
 
     hideModal() {
@@ -280,8 +274,6 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
         modal.classList.remove('visible');
         setTimeout(() => {
           modal.style.display = 'none';
-          // Reset content if it was showing thank you message
-          this.createModal();
         }, 300);
       }
     }
@@ -422,18 +414,24 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
     }
   }
 
-  // Handler for the async script loading
-  ns.init = function(config) {
-    console.log('ns.init called with config:', config);
-    if (!ns.instance) {
-      ns.instance = new ReviewWidget(config);
+  // Create the init function on the namespace
+  window.ReviewWidgetNS.init = function(config) {
+    console.log('ReviewWidgetNS.init called with config:', config);
+    if (!window.ReviewWidgetNS.instance) {
+      window.ReviewWidgetNS.instance = new ReviewWidget(config);
     }
-    return ns.instance;
+    return window.ReviewWidgetNS.instance;
   };
 
   // Process any commands that were queued before the script loaded
   console.log('Processing queued commands:', queue);
-  queue.forEach(args => ns.apply(null, args));
+  queue.forEach(args => {
+    const command = args[0];
+    const config = args[1];
+    if (command === 'init') {
+      window.ReviewWidgetNS.init(config);
+    }
+  });
 
   console.log('ReviewWidgetNS setup complete');
 })(window.ReviewWidgetNS);

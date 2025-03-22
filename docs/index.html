@@ -80,23 +80,28 @@
 
     <h2>Live Preview</h2>
     <p>Here's a live preview of the widget with a 2-second delay:</p>
-    <button onclick="window.ReviewWidgetNS.instance && window.ReviewWidgetNS.instance.showModal()">Show Review Modal</button>
+    <button onclick="if (window.ReviewWidgetNS && window.ReviewWidgetNS.instance) { window.ReviewWidgetNS.instance.showModal(); }">Show Review Modal</button>
 
     <script>
     console.log('Starting widget initialization...');
     (function(w,d,r,i,p,c,t){
         console.log('Setting up widget with:', { namespace: r, portalId: i, color: p, delay: c });
-        w[r]=w[r]||function(){
-            console.log('Queueing command:', arguments);
-            (w[r].q=w[r].q||[]).push(arguments);
-        };
-        t=d.createElement('script');t.async=1;t.src='embed.js';
-        c=d.getElementsByTagName('script')[0];c.parentNode.insertBefore(t,c);
-        w[r]('init', {
+        // Create the namespace if it doesn't exist
+        w[r] = w[r] || {};
+        // Create the command queue
+        w[r].q = w[r].q || [];
+        // Queue the init command
+        w[r].q.push(['init', {
             portalId: 'test-portal',
             primaryColor: '#FF5733',
             delay: 2000
-        });
+        }]);
+        // Load the script
+        t=d.createElement('script');
+        t.async=1;
+        t.src='embed.js';
+        c=d.getElementsByTagName('script')[0];
+        c.parentNode.insertBefore(t,c);
     })(window,document,'ReviewWidgetNS','test-portal','#FF5733',2000);
     </script>
 
