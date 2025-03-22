@@ -55,19 +55,27 @@ export default function ProfileComplete() {
         throw new Error('Not authenticated');
       }
 
-      // First try to insert
-      const { error: insertError } = await supabase
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
         .from('users_profile')
-        .insert({
-          id: session.user.id,
-          full_name: data.full_name,
-          company_name: data.company_name,
-          updated_at: new Date().toISOString(),
-          plan: 'free'
-        });
+        .select('id')
+        .eq('id', session.user.id)
+        .single();
 
-      // If insert fails due to conflict, try update
-      if (insertError?.code === '23505') { // Unique violation error code
+      let error;
+      if (!existingProfile) {
+        // Insert new profile
+        const { error: insertError } = await supabase
+          .from('users_profile')
+          .insert([{
+            id: session.user.id,
+            full_name: data.full_name,
+            company_name: data.company_name,
+            plan: 'free'
+          }]);
+        error = insertError;
+      } else {
+        // Update existing profile
         const { error: updateError } = await supabase
           .from('users_profile')
           .update({
@@ -76,10 +84,12 @@ export default function ProfileComplete() {
             updated_at: new Date().toISOString()
           })
           .eq('id', session.user.id);
+        error = updateError;
+      }
 
-        if (updateError) throw updateError;
-      } else if (insertError) {
-        throw insertError;
+      if (error) {
+        console.error('Database operation error:', error);
+        throw error;
       }
 
       toast({
