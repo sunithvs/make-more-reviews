@@ -91,7 +91,19 @@ function parseBrowserInfo(userAgent: string) {
   }
 }
 
+// CORS headers configuration
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     // Only allow POST requests
     if (req.method !== 'POST') {
@@ -168,7 +180,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify(response), {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     })
 
@@ -194,7 +206,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify(errorResponse), {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,
     })
   }

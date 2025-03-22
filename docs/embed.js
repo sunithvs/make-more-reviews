@@ -21,7 +21,7 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
         primaryColor: config.primaryColor || '#007bff',
         delay: config.delay || 5000,
         endpoint: 'https://wiikcmynyrcdaazhlgfo.supabase.co/functions/v1/review-submission',
-        apiKey: config.apiKey
+        apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaWtjbXlueXJjZGFhemhsZ2ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2MTQwMjcsImV4cCI6MjA1ODE5MDAyN30.R0UaouisOyr9jd_7GHoW-e2gmL5pSSeBpJMsZiMAA_Q'
       };
       
       console.log('Created new instance with config:', this.config);
@@ -347,9 +347,9 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
             'Authorization': `Bearer ${this.config.apiKey}`
           },
           body: JSON.stringify({
+            portalId: this.config.portalId,
             rating,
-            review_text: reviewText,
-            portal_id: this.config.portalId,
+            reviewText,
             metadata
           })
         });
@@ -377,47 +377,83 @@ window.ReviewWidgetNS = window.ReviewWidgetNS || {};
     }
 
     _collectMetadata() {
-      console.log('Collecting metadata...');
-      const urlParams = new URLSearchParams(window.location.search);
-      const utmParams = {
-        utm_source: urlParams.get('utm_source'),
-        utm_medium: urlParams.get('utm_medium'),
-        utm_campaign: urlParams.get('utm_campaign'),
-        utm_term: urlParams.get('utm_term'),
-        utm_content: urlParams.get('utm_content')
-      };
-
       return {
         url: window.location.href,
-        referrer: document.referrer,
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        screenSize: `${window.screen.width}x${window.screen.height}`,
-        browser: this._getBrowserInfo(),
-        timestamp: new Date().toISOString(),
-        utmParams
+        referrer_url: document.referrer,
+        landing_page: window.location.href,
+        utm_source: this._getQueryParam('utm_source'),
+        utm_medium: this._getQueryParam('utm_medium'),
+        utm_campaign: this._getQueryParam('utm_campaign'),
+        utm_term: this._getQueryParam('utm_term'),
+        utm_content: this._getQueryParam('utm_content'),
+        device_type: this._getDeviceType(),
+        browser: this._getBrowserInfo().browser,
+        browser_version: this._getBrowserInfo().version,
+        os: this._getOSInfo().os,
+        os_version: this._getOSInfo().version
       };
     }
 
-    _getBrowserInfo() {
-      console.log('Getting browser info...');
-      const userAgent = navigator.userAgent;
-      const browsers = {
-        chrome: /Chrome/,
-        safari: /Safari/,
-        firefox: /Firefox/,
-        ie: /MSIE|Trident/,
-        edge: /Edge/,
-        opera: /Opera|OPR/
-      };
+    _getDeviceType() {
+      const ua = navigator.userAgent;
+      if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+        return 'tablet';
+      }
+      if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+        return 'mobile';
+      }
+      return 'desktop';
+    }
 
-      for (const [browser, regex] of Object.entries(browsers)) {
-        if (regex.test(userAgent)) {
-          return browser;
-        }
+    _getBrowserInfo() {
+      const ua = navigator.userAgent;
+      let browser = 'unknown';
+      let version = '';
+
+      if (ua.includes('Firefox/')) {
+        browser = 'Firefox';
+        version = ua.match(/Firefox\/([\d.]+)/)?.[1] || '';
+      } else if (ua.includes('Chrome/')) {
+        browser = 'Chrome';
+        version = ua.match(/Chrome\/([\d.]+)/)?.[1] || '';
+      } else if (ua.includes('Safari/')) {
+        browser = 'Safari';
+        version = ua.match(/Version\/([\d.]+)/)?.[1] || '';
+      } else if (ua.includes('Edge/')) {
+        browser = 'Edge';
+        version = ua.match(/Edge\/([\d.]+)/)?.[1] || '';
       }
 
-      return 'unknown';
+      return { browser, version };
+    }
+
+    _getOSInfo() {
+      const ua = navigator.userAgent;
+      let os = 'unknown';
+      let version = '';
+
+      if (ua.includes('Windows')) {
+        os = 'Windows';
+        version = ua.match(/Windows NT ([\d.]+)/)?.[1] || '';
+      } else if (ua.includes('Mac OS X')) {
+        os = 'MacOS';
+        version = ua.match(/Mac OS X ([\d_]+)/)?.[1]?.replace(/_/g, '.') || '';
+      } else if (ua.includes('Linux')) {
+        os = 'Linux';
+      } else if (ua.includes('Android')) {
+        os = 'Android';
+        version = ua.match(/Android ([\d.]+)/)?.[1] || '';
+      } else if (ua.includes('iOS')) {
+        os = 'iOS';
+        version = ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g, '.') || '';
+      }
+
+      return { os, version };
+    }
+
+    _getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param) || '';
     }
   }
 
