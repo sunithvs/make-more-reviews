@@ -7,7 +7,7 @@ import { toast, Toaster } from "sonner";
 
 interface SharePageProps {
   params: {
-    slug: string;
+    portalId: string;
   };
 }
 
@@ -17,17 +17,15 @@ export default function SharePage({ params }: SharePageProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [height, setHeight] = useState(600);
   const [width, setWidth] = useState('100%');
-  const [portal_id, setPortalId] = useState(params.slug);
 
-
-  const formUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${portal_id}`;
+  const formUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${params.portalId}`;
   
   const embedScript = `<script>
 (function(w,d,r){
     w[r] = w[r] || {};
     w[r].q = w[r].q || [];
     w[r].q.push(['init', {
-        portalId: '${portal_id}',
+        portalId: '${params.portalId}',
         primaryColor: '${primaryColor}',
         delay: ${delay}
     }]);
