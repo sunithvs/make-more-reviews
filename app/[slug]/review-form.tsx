@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ReviewFormProps {
   portalId: string;
@@ -31,6 +33,22 @@ export default function ReviewForm({
   const searchParams = useSearchParams();
   const router = useRouter();
   const supabase = createClient();
+
+  const getFeedbackMessage = (value: number) => {
+    if (!value) return null;
+    
+    const messages = {
+      1: { emoji: '😢', message: "We're sorry to hear that" },
+      2: { emoji: '😕', message: "We'll work on improving" },
+      3: { emoji: '😊', message: "Thanks for your feedback" },
+      4: { emoji: '🌟', message: "We're glad you had a good experience" },
+      5: { emoji: '🎉', message: "Fantastic! Thank you so much" }
+    };
+
+    // Scale the rating to 1-5 range for feedback
+    const scaledRating = Math.ceil((value / ratingScale) * 5);
+    return messages[scaledRating as keyof typeof messages];
+  };
 
   const getMetadata = () => {
     // Simple device detection
@@ -82,26 +100,60 @@ export default function ReviewForm({
     };
   };
 
+  const getPlaceholder = (rating: number) => {
+    if (!rating) return "Tell us about your experience";
+    if (requireTextReview) return "Please share your experience (required)";
+
+    // Scale the rating to 1-5 range for consistent messaging
+    const scaledRating = Math.ceil((rating / ratingScale) * 5);
+    
+    const placeholders = {
+      1: [
+        "What went wrong? Help us improve",
+        "What could we have done better?",
+        "Share your concerns with us"
+      ],
+      2: [
+        "What aspects need improvement?",
+        "Tell us how we can do better",
+        "What didn't meet your expectations?"
+      ],
+      3: [
+        "What could make your experience better?",
+        "Share your thoughts with us",
+        "What would you like to see improved?"
+      ],
+      4: [
+        "What did you enjoy most?",
+        "Tell us what worked well for you",
+        "Share your positive experience"
+      ],
+      5: [
+        "What made your experience exceptional?",
+        "Tell us what you loved most",
+        "Share what impressed you"
+      ]
+    };
+
+    // Get random placeholder for variety
+    const options = placeholders[scaledRating as keyof typeof placeholders];
+    return options[Math.floor(Math.random() * options.length)];
+  };
+
   const handleSubmit = async () => {
     if (rating === 0) {
-      alert('Please select a rating');
+      toast.error('Please select a rating');
       return;
     }
 
     if (requireTextReview && !review.trim()) {
-      alert('Please provide a review');
+      toast.error('Please provide a review');
       return;
     }
 
     setLoading(true);
     try {
       const metadata = getMetadata();
-      console.log('Submitting with:', {
-        portalId,
-        review,
-        rating,
-        metadata
-      });
       const { data, error } = await supabase.rpc('insert_review_with_metadata', {
         p_portal_id: portalId,
         p_review_text: review || '',
@@ -112,14 +164,16 @@ export default function ReviewForm({
       if (error) {
         console.error('Error submitting review:', error);
         if (error.message.includes('Invalid portal_id')) {
-          alert('Invalid portal ID');
+          toast.error('Invalid portal ID');
         } else if (error.message.includes('Rating must be between')) {
-          alert('Invalid rating value');
+          toast.error('Invalid rating value');
         } else {
-          alert('Failed to submit review. Please try again.');
+          toast.error('Failed to submit review. Please try again.');
         }
         return;
       }
+
+      toast.success('Thank you for your review!');
 
       // Redirect based on settings
       if (redirectUrl) {
@@ -129,54 +183,113 @@ export default function ReviewForm({
       }
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert('Failed to submit review. Please try again.');
+      toast.error('Failed to submit review. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const renderRatingOption = (value: number) => {
+    const isSelected = rating === value;
+    const baseClasses = "transition-all duration-200 ease-in-out transform hover:scale-110";
+    
     switch (ratingType) {
       case 'stars':
-        return <span className="text-2xl">★</span>;
+        return (
+          <span className={`text-2xl ${baseClasses} ${isSelected ? 'text-yellow-400' : 'text-gray-300'}`}>
+            ★
+          </span>
+        );
       case 'emojis':
-        return <span className="text-2xl">{
-          value <= 2 ? '😞' : 
-          value === 3 ? '😐' : 
-          value === 4 ? '😊' : '😃'
-        }</span>;
+        const getEmoji = (val: number) => {
+          const scaledValue = Math.ceil((val / ratingScale) * 5);
+          return ['😢', '😕', '😐', '😊', '🎉'][scaledValue - 1] || '😐';
+        };
+        return (
+          <span className={`text-2xl ${baseClasses}`}>
+            {getEmoji(value)}
+          </span>
+        );
       default:
         return value;
     }
   };
 
+  const getRatingLabel = () => {
+    if (!rating) return 'Select your rating';
+    
+    switch (ratingType) {
+      case 'stars':
+        return `${rating} star${rating !== 1 ? 's' : ''}`;
+      case 'emojis':
+        return rating <= 2 ? 'Poor' : rating === 3 ? 'Average' : rating === 4 ? 'Good' : 'Excellent';
+      default:
+        return `Rating: ${rating}/${ratingScale}`;
+    }
+  };
+
+  const feedback = getFeedbackMessage(rating);
+
   return (
-    <Card className="w-full max-w-lg mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Leave a Review</CardTitle>
+        <CardTitle>Share Your Experience</CardTitle>
+        <CardDescription>Your feedback helps us improve our service</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <div className="space-y-4">
-          <div className="flex justify-center space-x-2">
-            {Array.from({ length: ratingScale }).map((_, i) => (
-              <Button
-                key={i}
-                variant={rating === i + 1 ? "default" : "outline"}
-                size="lg"
-                onClick={() => setRating(i + 1)}
-                className="w-12 h-12"
-              >
-                {renderRatingOption(i + 1)}
-              </Button>
-            ))}
+          <div className="text-center">
+            <div className="flex justify-center space-x-2 mb-2">
+              {Array.from({ length: ratingScale }).map((_, i) => (
+                <Button
+                  key={i}
+                  variant={rating === i + 1 ? "default" : "outline"}
+                  size="lg"
+                  onClick={() => setRating(i + 1)}
+                  className={`w-12 h-12 ${rating === i + 1 ? 'ring-2 ring-primary' : ''}`}
+                >
+                  {renderRatingOption(i + 1)}
+                </Button>
+              ))}
+            </div>
+            <AnimatePresence mode="wait">
+              {feedback && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="flex flex-col items-center space-y-2 mt-4"
+                >
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="text-4xl"
+                  >
+                    {feedback.emoji}
+                  </motion.span>
+                  <p className="text-sm font-medium text-primary">
+                    {feedback.message}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <p className="text-sm text-muted-foreground mt-2">{getRatingLabel()}</p>
           </div>
-          <Textarea
-            placeholder={requireTextReview ? "Please share your experience (required)" : "Tell us about your experience..."}
-            value={review}
-            onChange={(e) => setReview(e.target.value)}
-            className="min-h-[100px]"
-            required={requireTextReview}
-          />
+
+          <div className="space-y-2">
+            <Textarea
+              placeholder={getPlaceholder(rating)}
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              className="min-h-[120px] resize-none"
+              required={requireTextReview}
+            />
+            {requireTextReview && (
+              <p className="text-xs text-muted-foreground">
+                * Required field
+              </p>
+            )}
+          </div>
         </div>
       </CardContent>
       <CardFooter>
