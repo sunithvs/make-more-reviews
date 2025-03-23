@@ -6,13 +6,14 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, User, LogOut } from 'lucide-react';
+import { PlusCircle, User, LogOut, Menu } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export const dynamic = 'force-dynamic';
 
@@ -61,9 +62,59 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <div className="w-64 border-r bg-background flex flex-col">
+    <div className="flex flex-col md:flex-row h-screen">
+      {/* Mobile Header */}
+      <div className="md:hidden border-b p-4 flex items-center justify-between bg-background sticky top-0 z-10">
+        <h1 className="text-xl font-bold">MakeMoreReviews</h1>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0">
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b">
+                <h1 className="text-xl font-bold">MakeMoreReviews</h1>
+              </div>
+              <ScrollArea className="flex-1">
+                <div className="px-3 py-2">
+                  <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+                    Portals
+                  </h2>
+                  <div className="space-y-1">
+                    {portals?.map((portal) => (
+                      <Link
+                        key={portal.id}
+                        href={`/portal/${portal.id}`}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="bg-primary/10 text-xs">
+                            {getInitials(portal.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{portal.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </ScrollArea>
+              <div className="p-4 border-t mt-auto sticky bottom-0 bg-background">
+                <Button asChild className="w-full" size="sm">
+                  <Link href="/portal/new" className="flex items-center gap-2">
+                    <PlusCircle size={16} />
+                    Create Portal
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Sidebar - Hidden on mobile */}
+      <div className="hidden md:flex w-64 border-r bg-background flex-col">
         <div className="p-4 border-b">
           <h1 className="text-xl font-bold">MakeMoreReviews</h1>
         </div>
@@ -102,15 +153,15 @@ export default async function Dashboard() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Header */}
-        <div className="border-b">
-          <div className="flex h-16 items-center px-6 justify-between">
-            <h2 className="text-2xl font-bold">Your Portals</h2>
+        {/* Header - Hidden on mobile */}
+        <div className="border-b hidden md:block">
+          <div className="flex h-16 items-center px-4 md:px-6 justify-between">
+            <h2 className="text-xl md:text-2xl font-bold">Your Portals</h2>
             <div className="flex items-center gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
+                  <Button variant="ghost" className="relative h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <Avatar className="h-8 w-8 md:h-10 md:w-10">
                       <AvatarFallback className="bg-primary/10">
                         {session.user.email?.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -138,9 +189,9 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {(!portals || portals.length === 0) ? (
-            <Card className="w-full p-6 text-center">
+            <Card className="w-full p-4 md:p-6 text-center">
               <p className="text-muted-foreground mb-4">
                 You haven&#39;t created any portals yet.
               </p>
@@ -149,26 +200,26 @@ export default async function Dashboard() {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {portals.map((portal) => (
                 <Link key={portal.id} href={`/portal/${portal.id}`}>
                   <Card className="w-full h-full hover:bg-accent/5 transition-colors">
-                    <CardHeader>
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12">
+                    <CardHeader className="p-4 md:p-6">
+                      <div className="flex items-center gap-3 md:gap-4">
+                        <Avatar className="h-10 w-10 md:h-12 md:w-12">
                           <AvatarFallback className="bg-primary/10">
                             {getInitials(portal.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="space-y-1">
-                          <h3 className="font-semibold text-lg">{portal.name}</h3>
+                          <h3 className="font-semibold text-base md:text-lg">{portal.name}</h3>
                           <Badge variant="secondary" className="text-xs">
                             {portal.plan}
                           </Badge>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
                       <p className="text-sm text-muted-foreground">
                         {portal.description || 'No description provided'}
                       </p>
