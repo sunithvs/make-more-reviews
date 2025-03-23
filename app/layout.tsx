@@ -1,29 +1,70 @@
-import { Inter } from "next/font/google";
-import { Metadata } from "next";
-import "./globals.css";
-import { MainNav } from "@/components/main-nav";
-import { Toaster } from "@/components/ui/toaster";
-import { SiteHeader } from "@/components/site-header";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { SiteHeader } from '@/components/site-header'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { Analytics } from '@/components/analytics'
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Make More Reviews",
-  description: "Collect and manage customer reviews with ease. Boost your online presence with authentic customer feedback.",
-};
+  metadataBase: new URL('https://makemorereviews.com'),
+  title: {
+    default: 'Make More Reviews - Customer Feedback Management Platform',
+    template: '%s | Make More Reviews'
+  },
+  description: 'Transform your customer feedback process with Make More Reviews. Automate collection, gain valuable insights, and showcase reviews effortlessly.',
+  keywords: ['customer reviews', 'review management', 'feedback automation', 'business analytics', 'customer insights'],
+  authors: [{ name: 'Make More Reviews Team' }],
+  creator: 'Make More Reviews',
+  publisher: 'Make More Reviews',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  }
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head />
       <body className={inter.className}>
-        <SiteHeader />
-        <main className="flex-1 p-5">{children}</main>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="relative flex min-h-screen flex-col">
+            <SiteHeader />
+            <div className="flex-1">{children}</div>
+          </div>
+          <Toaster />
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

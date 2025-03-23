@@ -35,7 +35,7 @@ export function ReviewCard({ content, author, rating, color, delay }: ReviewCard
       }}
     >
       <div className="flex gap-0.5 mb-3">
-        {Array(4).fill(0).map((_, i) => (
+        {Array(5).fill(0).map((_, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, x: -20 }}
