@@ -44,7 +44,7 @@ export default async function PortalReviews({ params }: PageProps) {
           <h2 className="font-semibold mb-2">{portal.name}</h2>
           <p className="text-sm text-muted-foreground">{portal.description || 'No description'}</p>
         </div>
-        <div className="p-4 border-t mt-auto">
+        <div className="p-4 border-t mt-auto sticky bottom-0 bg-background">
           <Button asChild variant="outline" className="w-full" size="sm">
             <Link href="/dashboard">
               Back to Dashboard
