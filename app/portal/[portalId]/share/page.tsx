@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,12 @@ export default function SharePage({ params }: SharePageProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [height, setHeight] = useState(600);
   const [width, setWidth] = useState('100%');
+  const [formUrl, setFormUrl] = useState('');
 
-  const formUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${params.portalId}`;
+  useEffect(() => {
+    // Set the form URL only on the client side
+    setFormUrl(`${window.location.origin}/${params.portalId}`);
+  }, [params.portalId]);
   
   const embedScript = `<script>
 (function(w,d,r){
@@ -127,11 +131,13 @@ export default function SharePage({ params }: SharePageProps) {
               </CardHeader>
               <CardContent className="p-4 md:p-6 pt-0">
                 <div className="border rounded-lg overflow-hidden">
-                  <iframe
-                    src={formUrl}
-                    className="w-full h-[400px] md:h-[600px]"
-                    title="Review Form Preview"
-                  />
+                  {formUrl && (
+                    <iframe
+                      src={formUrl}
+                      className="w-full h-[400px] md:h-[600px]"
+                      title="Review Form Preview"
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -274,13 +280,15 @@ export default function SharePage({ params }: SharePageProps) {
                 </div>
 
                 <div className="border rounded-lg overflow-hidden">
-                  <iframe
-                    src={formUrl}
-                    width={width}
-                    height={height}
-                    style={{ border: 'none' }}
-                    title="Review Form iFrame Preview"
-                  />
+                  {formUrl && (
+                    <iframe
+                      src={formUrl}
+                      width={width}
+                      height={height}
+                      style={{ border: 'none' }}
+                      title="Review Form iFrame Preview"
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
