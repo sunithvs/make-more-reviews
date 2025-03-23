@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import ReviewsTable from './reviews-table';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +40,12 @@ export default async function PortalReviews({ params }: PageProps) {
           <CardTitle>Reviews for {portal.name}</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold">Portal Reviews</h1>
+            <Link href={`/portal/${params.portalId}/share`}>
+              <Button variant="default">Share</Button>
+            </Link>
+          </div>
           <ReviewsTable portalId={params.portalId} />
         </CardContent>
       </Card>

@@ -25,7 +25,7 @@ export default async function Dashboard() {
     redirect('/login');
   }
 
-  // Fetch active portals
+  // Fetch active portal
   const { data: portals, error } = await supabase
     .from('portals')
     .select('*')
@@ -33,8 +33,8 @@ export default async function Dashboard() {
     .order('name');
 
   if (error) {
-    console.error('Error fetching portals:', error);
-    throw new Error('Failed to fetch portals');
+    console.error('Error fetching portal:', error);
+    throw new Error('Failed to fetch portal');
   }
 
   return (
@@ -42,7 +42,7 @@ export default async function Dashboard() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Your Portals</h1>
         <Button asChild>
-          <Link href="/portals/new">Create New Portal</Link>
+          <Link href="/app/portal/new">Create New Portal</Link>
         </Button>
       </div>
 
@@ -52,7 +52,7 @@ export default async function Dashboard() {
             You haven&#39;t created any portals yet.
           </p>
           <Button asChild>
-            <Link href="/portals/new">Create Your First Portal</Link>
+            <Link href="/app/portal/new">Create Your First Portal</Link>
           </Button>
         </Card>
       ) : (
@@ -75,10 +75,10 @@ export default async function Dashboard() {
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
                 <Button variant="outline" asChild>
-                  <Link href={`/portals/${portal.id}/settings`}>Settings</Link>
+                  <Link href={`/portal/${portal.id}/settings`}>Settings</Link>
                 </Button>
                 <Button asChild>
-                  <Link href={`/portals/${portal.id}`}>View Portal</Link>
+                  <Link href={`/portal/${portal.id}`}>View Portal</Link>
                 </Button>
               </CardFooter>
             </Card>
