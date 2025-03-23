@@ -4,25 +4,23 @@ import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 
 export function AnimatedStars() {
-  const stars = Array(5).fill(0);
+  const stars = Array(4).fill(0);
 
   return (
     <div className="flex items-center justify-center gap-2">
       {stars.map((_, index) => (
         <motion.div
           key={index}
-          initial={{ opacity: 0, scale: 0 }}
+          initial={{ opacity: 0, scale: 0, x: -100 }}
           animate={{ 
             opacity: 1, 
             scale: 1,
-            filter: index < 2 ? "grayscale(1)" : "grayscale(0)"
+            x: 0,
+            filter: "grayscale(0)"
           }}
           transition={{
             delay: index * 0.2,
-            duration: 0.5,
-            repeat: Infinity,
-            repeatDelay: 2,
-            repeatType: "reverse"
+            duration: 0.5
           }}
         >
           <Star 

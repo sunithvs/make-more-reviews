@@ -35,12 +35,18 @@ export function ReviewCard({ content, author, rating, color, delay }: ReviewCard
       }}
     >
       <div className="flex gap-0.5 mb-3">
-        {Array(5).fill(0).map((_, i) => (
-          <Star
+        {Array(4).fill(0).map((_, i) => (
+          <motion.div
             key={i}
-            className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-            strokeWidth={1.5}
-          />
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: delay + i * 0.1 }}
+          >
+            <Star
+              className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+              strokeWidth={1.5}
+            />
+          </motion.div>
         ))}
       </div>
       <p className="text-sm mb-3 text-gray-800 font-medium leading-relaxed">{content}</p>

@@ -7,7 +7,7 @@ const leftReviews = [
   {
     content: "This tool has completely transformed how we collect reviews. Our response rate has increased by 300%!",
     author: "Sarah M.",
-    rating: 5,
+    rating: 4,
     color: "bg-yellow-100",
     position: "top-20",
     rotate: -4
@@ -34,7 +34,7 @@ const rightReviews = [
   {
     content: "The AI insights have helped us identify key areas for improvement. Fantastic tool!",
     author: "Michael R.",
-    rating: 5,
+    rating: 4,
     color: "bg-blue-100",
     position: "top-32",
     rotate: 3
@@ -42,7 +42,7 @@ const rightReviews = [
   {
     content: "We've seen a significant increase in positive reviews since using this platform.",
     author: "David K.",
-    rating: 5,
+    rating: 4,
     color: "bg-pink-100",
     position: "top-2/3",
     rotate: 4
@@ -50,7 +50,7 @@ const rightReviews = [
   {
     content: "Best review management tool we've used. Simple yet powerful!",
     author: "James W.",
-    rating: 5,
+    rating: 4,
     color: "bg-orange-100",
     position: "bottom-20",
     rotate: 2
