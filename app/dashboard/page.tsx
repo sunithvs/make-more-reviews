@@ -42,7 +42,7 @@ export default async function Dashboard() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Your Portals</h1>
         <Button asChild>
-          <Link href="/app/portal/new">Create New Portal</Link>
+          <Link href="/portal/new">Create New Portal</Link>
         </Button>
       </div>
 
