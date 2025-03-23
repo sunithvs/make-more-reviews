@@ -19,26 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ReviewsGrid from './reviews-grid';
+import { formatDate } from './utils';
 
 const ITEMS_PER_PAGE = 10;
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'just now';
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) return `${diffInDays}d ago`;
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths < 12) return `${diffInMonths}mo ago`;
-  const diffInYears = Math.floor(diffInDays / 365);
-  return `${diffInYears}y ago`;
-}
 
 type Review = {
   id: string;
@@ -61,6 +45,7 @@ export default function ReviewsTable({ portalId }: ReviewsTableProps) {
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const ratingFilter = searchParams.get('rating');
+  const viewMode = searchParams.get('view') || 'table';
 
   const fetchReviews = async () => {
     setLoading(true);
@@ -152,40 +137,44 @@ export default function ReviewsTable({ portalId }: ReviewsTableProps) {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Rating</TableHead>
-              <TableHead className="w-[50%]">Review</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {reviews.map((review) => (
-              <TableRow key={review.id}>
-                <TableCell>
-                  <div className="flex items-center">
-                    <span className="font-medium">{review.rating}</span>
-                    <span className="ml-1 text-muted-foreground">★</span>
-                  </div>
-                </TableCell>
-                <TableCell>{review.review_text || 'No comment'}</TableCell>
-                <TableCell>
-                  {formatDate(review.created_at)}
-                </TableCell>
-              </TableRow>
-            ))}
-            {reviews.length === 0 && (
+      {viewMode === 'table' ? (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-6">
-                  No reviews found
-                </TableCell>
+                <TableHead>Rating</TableHead>
+                <TableHead className="w-[50%]">Review</TableHead>
+                <TableHead>Created</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {reviews.map((review) => (
+                <TableRow key={review.id}>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <span className="font-medium">{review.rating}</span>
+                      <span className="ml-1 text-yellow-500">★</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{review.review_text || 'No comment'}</TableCell>
+                  <TableCell>
+                    {formatDate(review.created_at)}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {reviews.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center py-6">
+                    No reviews found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <ReviewsGrid reviews={reviews} />
+      )}
 
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
