@@ -76,11 +76,11 @@ export function HeroContent() {
             Automate, analyze, and showcase customer feedback with Make More Reviews.
             Simplify integration and gain valuable insights.
           </motion.p>
-          <motion.div variants={fadeIn} className="flex gap-4 justify-center">
+          <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <SignInModal>
               <Button
                 size="lg"
-                className="group"
+                className="group w-full sm:w-auto"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -91,7 +91,7 @@ export function HeroContent() {
             <Button
               variant="outline"
               size="lg"
-              className="group bg-background/80"
+              className="group bg-background/80 w-full sm:w-auto"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
