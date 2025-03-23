@@ -1,9 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ChromePicker } from 'react-color';
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
+import { Copy, Link2, Code2, Frame, ArrowLeft } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import Link from 'next/link';
 
 interface SharePageProps {
   params: {
@@ -17,8 +24,12 @@ export default function SharePage({ params }: SharePageProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [height, setHeight] = useState(600);
   const [width, setWidth] = useState('100%');
+  const [formUrl, setFormUrl] = useState('');
 
-  const formUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${params.portalId}`;
+  useEffect(() => {
+    // Set the form URL only on the client side
+    setFormUrl(`${window.location.origin}/${params.portalId}`);
+  }, [params.portalId]);
   
   const embedScript = `<script>
 (function(w,d,r){
@@ -55,221 +66,235 @@ export default function SharePage({ params }: SharePageProps) {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Toaster position="bottom-right" />
-      <h1 className="text-3xl font-bold mb-8">Share Review Form</h1>
-      
-      <Tabs defaultValue="form" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 p-1 bg-muted rounded-2xl mb-6">
-          <TabsTrigger value="form" className="rounded-xl py-2">Form Link</TabsTrigger>
-          <TabsTrigger value="widget" className="rounded-xl py-2">Widget</TabsTrigger>
-          <TabsTrigger value="iframe" className="rounded-xl py-2">iFrame</TabsTrigger>
-        </TabsList>
-
-        {/* Form Link Tab */}
-        <TabsContent value="form" className="space-y-6">
-          <div className="prose max-w-none">
-            <h2>Share via Direct Link</h2>
-            <p>
-              Share this link with your customers to collect reviews. They can access the form directly
-              through their web browser.
-            </p>
+    <div className="container max-w-5xl mx-auto py-4 md:py-8 px-4">
+      <div className="flex flex-col space-y-6 md:space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <Button variant="ghost" size="icon" asChild className="w-fit">
+            <Link href={`/portal/${params.portalId}`}>
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold">Share Review Form</h1>
+            <Separator orientation="vertical" className="hidden md:block h-8" />
+            <p className="text-sm md:text-base text-muted-foreground">Choose how you want to integrate reviews into your website</p>
           </div>
-          
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <label className="block text-base font-medium mb-3">Form URL</label>
-            <div className="space-y-4">
-              <input
-                type="text"
-                readOnly
-                value={formUrl}
-                className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-base"
-              />
-              <button
-                onClick={() => copyToClipboard(formUrl)}
-                className="w-full py-4 text-base font-medium rounded-2xl border border-gray-200 hover:bg-gray-50"
-              >
-                Copy Link
-              </button>
-            </div>
-          </div>
+        </div>
+        
+        <Tabs defaultValue="form" className="w-full">
+          <TabsList className="w-full md:w-[400px] grid grid-cols-3">
+            <TabsTrigger value="form" className="flex items-center gap-2 text-xs md:text-sm">
+              <Link2 className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden md:inline">Link</span>
+              <span className="md:hidden">Link</span>
+            </TabsTrigger>
+            <TabsTrigger value="widget" className="flex items-center gap-2 text-xs md:text-sm">
+              <Code2 className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden md:inline">Widget</span>
+              <span className="md:hidden">Widget</span>
+            </TabsTrigger>
+            <TabsTrigger value="iframe" className="flex items-center gap-2 text-xs md:text-sm">
+              <Frame className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden md:inline">iFrame</span>
+              <span className="md:hidden">Frame</span>
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold mb-4">Preview</h3>
-            <div className="border rounded-2xl overflow-hidden">
-              <iframe
-                src={formUrl}
-                className="w-full h-[600px]"
-                title="Review Form Preview"
-              />
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Widget Tab */}
-        <TabsContent value="widget" className="space-y-6">
-          <div className="prose max-w-none">
-            <h2>Embed as Widget</h2>
-            <p>
-              Add a floating review button to your website. When clicked, it opens a review form modal.
-              This is the most user-friendly option and recommended for most websites.
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6">
-            <div>
-              <label className="block text-base font-medium mb-3">Primary Color</label>
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-12 h-12 rounded-xl cursor-pointer"
-                  style={{ backgroundColor: primaryColor }}
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                />
-                <input
-                  type="text"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="flex-1 p-4 bg-white border border-gray-200 rounded-2xl text-base"
-                />
-              </div>
-              {showColorPicker && (
-                <div className="absolute z-10 mt-2">
-                  <div
-                    className="fixed inset-0"
-                    onClick={() => setShowColorPicker(false)}
-                  />
-                  <ChromePicker
-                    color={primaryColor}
-                    onChange={(color) => setPrimaryColor(color.hex)}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-base font-medium mb-3">Display Delay (ms)</label>
-              <input
-                type="number"
-                value={delay}
-                onChange={(e) => setDelay(Number(e.target.value))}
-                className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-base"
-                min="0"
-                step="1000"
-              />
-              <p className="mt-2 text-sm text-gray-600">
-                Time to wait before showing the widget button (in milliseconds)
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-base font-medium mb-3">Embed Code</label>
-              <div className="relative">
-                <div className="rounded-[20px] border border-gray-200 bg-white">
-                  <div className="overflow-x-auto" style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: '#CBD5E1 transparent',
-                  }}>
-                    <pre className="p-6 text-sm font-mono" style={{ 
-                      whiteSpace: 'pre',
-                      display: 'inline-block',
-                      minWidth: '100%'
-                    }}>
-{embedScript}</pre>
+          {/* Form Link Tab */}
+          <TabsContent value="form" className="space-y-4 md:space-y-6">
+            <Card>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-lg md:text-xl">Share via Direct Link</CardTitle>
+                <CardDescription className="text-sm">
+                  Share this link with your customers to collect reviews. They can access the form directly
+                  through their web browser.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 pt-0 space-y-4">
+                <div className="space-y-2">
+                  <Label>Form URL</Label>
+                  <div className="flex gap-2">
+                    <Input readOnly value={formUrl} className="text-sm" />
+                    <Button onClick={() => copyToClipboard(formUrl)}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <button
-                  onClick={() => copyToClipboard(embedScript)}
-                  className="absolute top-4 right-4 rounded-xl bg-[#0A0A0A] hover:bg-[#1A1A1A] text-white px-4 py-2 text-sm"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
 
-          <div className="prose max-w-none">
-            <h3>Installation Instructions</h3>
-            <ol>
-              <li>Copy the embed code above</li>
-              <li>Paste it just before the closing <code>&lt;/body&gt;</code> tag of your website</li>
-              <li>The widget button will appear after the specified delay</li>
-              <li>Customize the appearance using the options above</li>
-            </ol>
-          </div>
-        </TabsContent>
+            <Card>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-lg md:text-xl">Preview</CardTitle>
+                <CardDescription className="text-sm">See how your review form looks to customers</CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 pt-0">
+                <div className="border rounded-lg overflow-hidden">
+                  {formUrl && (
+                    <iframe
+                      src={formUrl}
+                      className="w-full h-[400px] md:h-[600px]"
+                      title="Review Form Preview"
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* iFrame Tab */}
-        <TabsContent value="iframe" className="space-y-6">
-          <div className="prose max-w-none">
-            <h2>Embed as iFrame</h2>
-            <p>
-              Embed the review form directly into your webpage. This allows you to place the form
-              anywhere on your site and customize its dimensions.
-            </p>
-          </div>
+          {/* Widget Tab */}
+          <TabsContent value="widget" className="space-y-4 md:space-y-6">
+            <Card>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-lg md:text-xl">Embed as Widget</CardTitle>
+                <CardDescription className="text-sm">
+                  Add a floating review button to your website. When clicked, it opens a review form modal.
+                  This is the most user-friendly option and recommended for most websites.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 pt-0 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Primary Color</Label>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 rounded-md cursor-pointer border"
+                        style={{ backgroundColor: primaryColor }}
+                        onClick={() => setShowColorPicker(!showColorPicker)}
+                      />
+                      <Input
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        className="flex-1 text-sm"
+                      />
+                    </div>
+                    {showColorPicker && (
+                      <div className="absolute z-10 mt-2">
+                        <div
+                          className="fixed inset-0"
+                          onClick={() => setShowColorPicker(false)}
+                        />
+                        <ChromePicker
+                          color={primaryColor}
+                          onChange={(color) => setPrimaryColor(color.hex)}
+                        />
+                      </div>
+                    )}
+                  </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-base font-medium mb-3">Width</label>
-                <input
-                  type="text"
-                  value={width}
-                  onChange={(e) => setWidth(e.target.value)}
-                  className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-base"
-                  placeholder="e.g., 100%, 500px"
-                />
-              </div>
-              <div>
-                <label className="block text-base font-medium mb-3">Height (px)</label>
-                <input
-                  type="number"
-                  value={height}
-                  onChange={(e) => setHeight(Number(e.target.value))}
-                  className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-base"
-                  min="200"
-                  step="50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-base font-medium mb-3">iFrame Code</label>
-              <div className="relative">
-                <div className="rounded-[20px] border border-gray-200 bg-white">
-                  <div className="overflow-x-auto" style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: '#CBD5E1 transparent',
-                  }}>
-                    <pre className="p-6 text-sm font-mono" style={{ 
-                      whiteSpace: 'pre',
-                      display: 'inline-block',
-                      minWidth: '100%'
-                    }}>
-{iframeCode}</pre>
+                  <div className="space-y-2">
+                    <Label>Display Delay (ms)</Label>
+                    <Input
+                      type="number"
+                      value={delay}
+                      onChange={(e) => setDelay(Number(e.target.value))}
+                      min="0"
+                      step="1000"
+                      className="text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Time to wait before showing the widget button
+                    </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => copyToClipboard(iframeCode)}
-                  className="absolute top-4 right-4 rounded-xl bg-[#0A0A0A] hover:bg-[#1A1A1A] text-white px-4 py-2 text-sm"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
 
-          <div className="prose max-w-none">
-            <h3>Installation Instructions</h3>
-            <ol>
-              <li>Adjust the width and height to fit your webpage layout</li>
-              <li>Copy the iFrame code</li>
-              <li>Paste it where you want the form to appear on your webpage</li>
-              <li>The form will be embedded directly in your page</li>
-            </ol>
-          </div>
-        </TabsContent>
-      </Tabs>
+                <div className="space-y-2">
+                  <Label>Embed Code</Label>
+                  <div className="relative">
+                    <pre className="p-4 rounded-lg bg-muted font-mono text-xs md:text-sm overflow-x-auto">
+                      {embedScript}
+                    </pre>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="absolute top-2 right-2"
+                      onClick={() => copyToClipboard(embedScript)}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm md:text-base">Installation Instructions</h3>
+                  <ol className="list-decimal list-inside space-y-1 text-xs md:text-sm text-muted-foreground">
+                    <li>Copy the embed code above</li>
+                    <li>Paste it just before the closing <code>&lt;/body&gt;</code> tag of your website</li>
+                    <li>The widget button will appear after the specified delay</li>
+                    <li>Customize the appearance using the options above</li>
+                  </ol>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* iFrame Tab */}
+          <TabsContent value="iframe" className="space-y-4 md:space-y-6">
+            <Card>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-lg md:text-xl">Embed as iFrame</CardTitle>
+                <CardDescription className="text-sm">
+                  Embed the review form directly into your website using an iFrame. This allows you to integrate
+                  the form seamlessly into your existing layout.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 pt-0 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Width</Label>
+                    <Input
+                      value={width}
+                      onChange={(e) => setWidth(e.target.value)}
+                      placeholder="e.g., 100% or 500px"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Height (px)</Label>
+                    <Input
+                      type="number"
+                      value={height}
+                      onChange={(e) => setHeight(Number(e.target.value))}
+                      min="200"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>iFrame Code</Label>
+                  <div className="relative">
+                    <pre className="p-4 rounded-lg bg-muted font-mono text-xs md:text-sm overflow-x-auto">
+                      {iframeCode}
+                    </pre>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="absolute top-2 right-2"
+                      onClick={() => copyToClipboard(iframeCode)}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg overflow-hidden">
+                  {formUrl && (
+                    <iframe
+                      src={formUrl}
+                      width={width}
+                      height={height}
+                      style={{ border: 'none' }}
+                      title="Review Form iFrame Preview"
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

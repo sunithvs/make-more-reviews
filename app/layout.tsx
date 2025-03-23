@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Supabase Auth + Next.js Demo",
+  title: "Make More reviews",
 };
 
 export default function RootLayout({
@@ -18,8 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <MainNav />
-        <main className="flex-1 p-10">{children}</main>
+        <main className="flex-1 p-5">{children}</main>
         <Toaster />
       </body>
     </html>

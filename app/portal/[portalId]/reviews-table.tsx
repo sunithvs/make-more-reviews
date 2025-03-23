@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -19,26 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ReviewsGrid from './reviews-grid';
+import { formatDate } from './utils';
 
 const ITEMS_PER_PAGE = 10;
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'just now';
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) return `${diffInDays}d ago`;
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths < 12) return `${diffInMonths}mo ago`;
-  const diffInYears = Math.floor(diffInDays / 365);
-  return `${diffInYears}y ago`;
-}
 
 type Review = {
   id: string;
@@ -61,6 +46,7 @@ export default function ReviewsTable({ portalId }: ReviewsTableProps) {
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const ratingFilter = searchParams.get('rating');
+  const viewMode = searchParams.get('view') || 'table';
 
   const fetchReviews = async () => {
     setLoading(true);
@@ -118,87 +104,147 @@ export default function ReviewsTable({ portalId }: ReviewsTableProps) {
 
   if (loading) {
     return (
-      <div className="animate-pulse">
+      <div className="animate-pulse space-y-3">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-12 bg-muted mb-2 rounded" />
+          <div key={i} className="h-24 md:h-12 bg-muted rounded-lg" />
         ))}
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <Select
-            value={ratingFilter || 'all'}
-            onValueChange={(value) => updateSearchParams('rating', value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by rating" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Ratings</SelectItem>
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <SelectItem key={rating} value={rating.toString()}>
-                  {rating} Star{rating !== 1 ? 's' : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          Total Reviews: {totalCount}
-        </div>
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-0 md:justify-between">
+        <Select
+          value={ratingFilter || 'all'}
+          onValueChange={(value) => updateSearchParams('rating', value)}
+        >
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Filter by rating" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Ratings</SelectItem>
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <SelectItem key={rating} value={rating.toString()}>
+                {rating} Star{rating !== 1 ? 's' : ''}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Rating</TableHead>
-              <TableHead className="w-[50%]">Review</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      {viewMode === 'table' ? (
+        <>
+          {/* Desktop Table View */}
+          <div className="rounded-md border hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Rating</TableHead>
+                  <TableHead className="w-[50%]">Review</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reviews.map((review) => (
+                  <TableRow key={review.id}>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <span className="font-medium">{review.rating}</span>
+                        <span className="ml-1 text-yellow-500">★</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{review.review_text || 'No comment'}</TableCell>
+                    <TableCell>
+                      {formatDate(review.created_at)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {reviews.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-6">
+                      No reviews found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="space-y-3 md:hidden">
             {reviews.map((review) => (
-              <TableRow key={review.id}>
-                <TableCell>
+              <Card key={review.id} className="p-4">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center">
-                    <span className="font-medium">{review.rating}</span>
-                    <span className="ml-1 text-muted-foreground">★</span>
+                    <span className="font-medium text-lg">{review.rating}</span>
+                    <span className="ml-1 text-yellow-500 text-lg">★</span>
                   </div>
-                </TableCell>
-                <TableCell>{review.review_text || 'No comment'}</TableCell>
-                <TableCell>
-                  {formatDate(review.created_at)}
-                </TableCell>
-              </TableRow>
+                  <time className="text-sm text-muted-foreground">
+                    {formatDate(review.created_at)}
+                  </time>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {review.review_text || 'No comment'}
+                </p>
+              </Card>
             ))}
             {reviews.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center py-6">
-                  No reviews found
-                </TableCell>
-              </TableRow>
+              <Card className="p-6 text-center text-muted-foreground">
+                No reviews found
+              </Card>
             )}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
+        </>
+      ) : (
+        <ReviewsGrid reviews={reviews} />
+      )}
 
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
-          {paginationLinks.map((page) => (
+        <div className="flex justify-center gap-2 mt-4 flex-wrap">
+          {currentPage > 1 && (
             <Button
-              key={page}
-              variant={page === currentPage ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              onClick={() => updateSearchParams('page', page.toString())}
+              onClick={() => updateSearchParams('page', (currentPage - 1).toString())}
             >
-              {page}
+              Previous
             </Button>
-          ))}
+          )}
+          {paginationLinks.map((page) => {
+            // Show first page, last page, and pages around current page
+            if (
+              page === 1 ||
+              page === totalPages ||
+              (page >= currentPage - 1 && page <= currentPage + 1)
+            ) {
+              return (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updateSearchParams('page', page.toString())}
+                >
+                  {page}
+                </Button>
+              );
+            } else if (
+              page === currentPage - 2 ||
+              page === currentPage + 2
+            ) {
+              return <span key={page} className="px-2">...</span>;
+            }
+            return null;
+          })}
+          {currentPage < totalPages && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => updateSearchParams('page', (currentPage + 1).toString())}
+            >
+              Next
+            </Button>
+          )}
         </div>
       )}
     </div>
