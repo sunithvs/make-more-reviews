@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import { Card } from "@/components/ui/card";
 
 interface PortalHeaderProps {
   userEmail: string;
@@ -33,41 +33,15 @@ export default function PortalHeader({ userEmail, portalId }: PortalHeaderProps)
   };
 
   return (
-    <div className="border-b">
-      <div className="flex flex-col md:flex-row md:h-16 items-start md:items-center px-4 md:px-6 py-3 md:py-0 gap-3 md:gap-0 justify-between">
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <h2 className="text-xl md:text-2xl font-bold">Reviews</h2>
-          <Separator orientation="vertical" className="h-6 hidden md:block" />
-          <Tabs value={viewMode} onValueChange={handleViewChange} className="w-auto md:w-[400px]">
-            <TabsList className="grid w-[160px] md:w-[200px] grid-cols-2">
-              <TabsTrigger value="table" className="flex items-center gap-2 text-xs md:text-sm">
-                <TableIcon className="h-3 w-3 md:h-4 md:w-4" />
-                Table
-              </TabsTrigger>
-              <TabsTrigger value="grid" className="flex items-center gap-2 text-xs md:text-sm">
-                <LayoutGrid className="h-3 w-3 md:h-4 md:w-4" />
-                Grid
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Mobile Actions */}
-        <div className="flex md:hidden items-center gap-2 w-full">
-          <Button variant="outline" size="sm" className="flex-1 h-8 text-xs">
-            <Filter className="h-3 w-3 mr-1" />
-            Filter
-          </Button>
-          <Button asChild variant="outline" size="sm" className="flex-1 h-8 text-xs">
-            <Link href={`/portal/${portalId}/share`}>
-              <Share2 className="h-3 w-3 mr-1" />
-              Share
-            </Link>
-          </Button>
+    <div className="bg-background">
+      <div className="flex flex-col space-y-4 p-4">
+        {/* Title */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Reviews</h2>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden">
+                <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -89,46 +63,84 @@ export default function PortalHeader({ userEmail, portalId }: PortalHeaderProps)
           </DropdownMenu>
         </div>
 
-        {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-4">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+        {/* View Toggle */}
+        <div className="flex items-center justify-between gap-4">
+          <Tabs value={viewMode} onValueChange={handleViewChange} className="w-full max-w-[280px]">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="table" className="flex items-center justify-center gap-2">
+                <TableIcon className="h-4 w-4" />
+                <span className="hidden md:inline">Table</span>
+              </TabsTrigger>
+              <TabsTrigger value="grid" className="flex items-center justify-center gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden md:inline">Grid</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="hidden md:flex items-center gap-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filter
+            </Button>
+            <Button asChild variant="outline" size="sm" className="flex items-center gap-2">
+              <Link href={`/portal/${portalId}/share`}>
+                <Share2 className="h-4 w-4" />
+                Share
+              </Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-primary/10">
+                      {userEmail?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <form action="/api/auth/signout" method="post">
+                    <button className="flex items-center gap-2 w-full">
+                      <LogOut className="h-4 w-4" />
+                      <span>Log out</span>
+                    </button>
+                  </form>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Mobile Action Buttons */}
+        <div className="flex md:hidden items-center gap-2">
+          <Button variant="outline" size="sm" className="flex-1 h-10 text-sm">
+            <Filter className="h-4 w-4 mr-2" />
             Filter
           </Button>
-          <Button asChild variant="outline" size="sm" className="flex items-center gap-2">
-            <Link href={`/portal/${portalId}/share`}>
+          <Button asChild variant="outline" size="sm" className="flex-1 h-10 text-sm">
+            <Link href={`/portal/${portalId}/share`} className="flex items-center justify-center gap-2">
               <Share2 className="h-4 w-4" />
               Share
             </Link>
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 md:h-10 md:w-10 rounded-full">
-                <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                  <AvatarFallback className="bg-primary/10">
-                    {userEmail?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuItem asChild>
-                <Link href="/profile" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <form action="/api/auth/signout" method="post">
-                  <button className="flex items-center gap-2 w-full">
-                    <LogOut className="h-4 w-4" />
-                    <span>Log out</span>
-                  </button>
-                </form>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
+
+        {/* Stats Card */}
+        <Card className="p-4 bg-white/50 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Total Reviews</p>
+              <p className="text-2xl font-bold">14</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
