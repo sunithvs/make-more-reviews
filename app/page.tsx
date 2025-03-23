@@ -8,8 +8,11 @@ import { ArrowRight, CheckCircle2, MessageSquare, Sparkles, Star, Users, Zap } f
 import Link from "next/link";
 import { AnimatedNumber } from "@/components/ui/animated-number";
 import { AnimatedText } from "@/components/ui/animated-text";
-import { SignInModal } from "@/components/auth/sign-in-modal"; // Import SignInModal
+import { SignInModal } from "@/components/auth/sign-in-modal"; 
 import { useRef } from "react";
+import { AnimatedStars } from "@/components/ui/animated-stars";
+import { TextCarousel } from "@/components/ui/text-carousel";
+import { FloatingReviews } from "@/components/ui/floating-reviews";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -116,18 +119,19 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <motion.div
-          className="absolute inset-0 bg-grid-white/[0.02] -z-10"
+          className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"
           style={{ y: backgroundY }}
         />
-        <div className="container px-4 mx-auto">
+        <FloatingReviews />
+        <div className="container relative px-4 mx-auto z-10">
           <motion.div
             initial="initial"
             animate="animate"
             variants={stagger}
-            className="max-w-3xl mx-auto text-center"
+            className="max-w-2xl mx-auto text-center"
           >
             <motion.div
-              className="relative mb-8"
+              className="mb-12"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{
@@ -136,38 +140,21 @@ export default function Home() {
                 damping: 20,
               }}
             >
-              <div className="w-24 h-24 mx-auto">
-                <Star className="w-full h-full text-primary animate-pulse" strokeWidth={1.5} />
-              </div>
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-              >
-                <Star className="w-24 h-24 text-primary/20" strokeWidth={1.5} />
-              </motion.div>
+              <AnimatedStars />
             </motion.div>
-            <motion.h1
+            <motion.div
               variants={fadeIn}
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="text-4xl md:text-6xl font-bold mb-6 space-y-4"
               style={{ y: textY }}
             >
-              <GradientText>
-                Effortless Review Collection.
-                <br />
-                Smarter Insights.
-              </GradientText>
-            </motion.h1>
+              <div className="bg-background/80 backdrop-blur-sm py-4 rounded-lg">
+                <div>Make More</div>
+                <TextCarousel />
+              </div>
+            </motion.div>
             <motion.p
               variants={fadeIn}
-              className="text-xl text-muted-foreground mb-8"
+              className="text-xl text-muted-foreground mb-8 bg-background/80 backdrop-blur-sm py-4 px-6 rounded-lg inline-block"
             >
               Automate, analyze, and showcase customer feedback with Make More Reviews.
               Simplify integration and gain valuable insights.
@@ -187,7 +174,7 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="lg"
-                className="group"
+                className="group bg-background/80"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
