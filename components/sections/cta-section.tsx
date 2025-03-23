@@ -21,7 +21,7 @@ const stagger = {
 
 export function CTASection() {
   return (
-    <section className="py-20" id="pricing">
+    <section className="py-20 bg-muted/50" id="pricing">
       <div className="container px-4 mx-auto">
         <motion.div
           initial="initial"
@@ -30,17 +30,17 @@ export function CTASection() {
           variants={stagger}
           className="max-w-3xl mx-auto text-center"
         >
-          <motion.h2 variants={fadeIn} className="text-3xl font-bold mb-6">
+          <motion.h2 variants={fadeIn} className="text-3xl md:text-5xl font-bold mb-6">
             Start Collecting Reviews Today
           </motion.h2>
-          <motion.p variants={fadeIn} className="text-lg text-muted-foreground mb-8">
+          <motion.p variants={fadeIn} className="text-lg md:text-xl text-muted-foreground mb-8 px-4">
             Join thousands of businesses using Make More Reviews to grow their online presence.
           </motion.p>
-          <motion.div variants={fadeIn} className="flex gap-4 justify-center">
+          <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
             <SignInModal>
               <Button
                 size="lg"
-                className="group"
+                className="group w-full sm:w-auto text-base md:min-w-[200px]"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -51,7 +51,7 @@ export function CTASection() {
             <Button
               variant="outline"
               size="lg"
-              className="group"
+              className="group w-full sm:w-auto text-base md:min-w-[200px]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
